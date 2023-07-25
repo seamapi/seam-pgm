@@ -18,7 +18,9 @@
     "commander": "^11.0.0",
     "esbuild": "^0.18.16",
     "esbuild-register": "^3.4.2",
+    "esbuild-runner": "^2.2.2",
     "node-pg-migrate": "^6.2.2",
+    "pg": "^8.11.1",
     "zapatos": "^6.1.4"
   }
 }
