@@ -3,11 +3,22 @@
   "repository": "seamapi/seam-node-pg-migrate",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
+  "main": "dist/index.js",
+  "scripts": {},
   "keywords": [],
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "pg-connection-from-env": "^1.1.0"
+  },
+  "peerDependencies": {
+    "node-pg-migrate": "*"
+  },
+  "devDependencies": {
+    "commander": "^11.0.0",
+    "esbuild": "^0.18.16",
+    "esbuild-register": "^3.4.2",
+    "node-pg-migrate": "^6.2.2",
+    "zapatos": "^6.1.4"
+  }
 }
