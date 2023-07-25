@@ -1,5 +1,6 @@
 {
   "name": "seam-node-pg-migrate",
+  "repository": "seamapi/seam-node-pg-migrate",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
