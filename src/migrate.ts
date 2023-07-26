@@ -3,32 +3,19 @@ import nodePgMigrate from "node-pg-migrate"
 import * as zg from "zapatos/generate"
 import { Client } from "pg"
 import Debug from "debug"
-import { getConnectionStringFromEnv } from "pg-connection-from-env"
+import {
+  getConnectionStringFromEnv,
+  getPgConnectionFromEnv,
+} from "pg-connection-from-env"
 import * as childProcess from "child_process"
 
-const debug = Debug("seam_pgm")
+const debug = Debug("seam-node-pg-migrate")
 
 export async function createMigration(name: string) {
   childProcess.execSync(
-    `node-pg-migrate --migration-file-language ts -m src/db/migrations create ${name}`
+    `npx node-pg-migrate --migration-file-language ts -m src/db/migrations create ${name}`
   )
   console.log(`Migration ${name} created`)
-}
-
-export async function reset() {
-  const client = new Client(getConnectionStringFromEnv())
-  await client.connect()
-  await client.query("DROP SCHEMA IF EXISTS public CASCADE")
-  await client.query("CREATE SCHEMA public")
-  await client.end()
-  console.log("Database reset completed")
-  await migrate()
-}
-
-export async function migrateAndGenerate() {
-  await migrate()
-  childProcess.execSync("tbls doc -o src/db/structure")
-  console.log("Migrations and structure generation completed")
 }
 
 export async function migrate() {
@@ -57,9 +44,10 @@ export async function migrate() {
     } as any),
   ])
 
-  const schemas = ["sp", "devops", "graphile_worker", "diagnostics", "auth0"]
+  const schemas = ["public"]
+  const db = getPgConnectionFromEnv(),
   await zg.generate({
-    db: getClientConfigFromEnv(),
+    db: 
     schemas: Object.fromEntries(
       schemas.map((s) => [
         s,

@@ -1,21 +1,33 @@
 // main.ts
-import { program } from "commander"
-import { migrate, reset, createMigration, migrateAndGenerate } from "./seam-pgm"
+import yargs from "yargs"
+import { migrate, reset, createMigration, migrateAndGenerate } from "./"
 
-program.command("create-migration <name>").action((name) => {
-  createMigration(name)
-})
-
-program.command("reset").action(() => {
-  reset()
-})
-
-program.command("migrate").action(() => {
-  migrate()
-})
-
-program.command("migrate-and-generate").action(() => {
-  migrateAndGenerate()
-})
-
-program.parse()
+yargs
+  .command(
+    "create-migration <name>",
+    "creates a new migration",
+    (yargs) => {
+      yargs.positional("name", {
+        describe: "Name for the migration",
+        type: "string",
+      })
+    },
+    (argv) => {
+      createMigration(argv.name as string)
+    }
+  )
+  .command("reset", "resets the database", {}, () => {
+    reset()
+  })
+  .command("migrate", "migrates the database", {}, () => {
+    migrate()
+  })
+  .command(
+    "migrate-and-generate",
+    "migrates and generates the database",
+    {},
+    () => {
+      migrateAndGenerate()
+    }
+  )
+  .parse()
