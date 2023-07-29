@@ -1,14 +1,15 @@
-// main.ts
+#!/usr/bin/env node
 import yargs from "yargs"
-import { migrate, reset, createMigration, migrateAndGenerate } from "./"
+import { migrate, reset, generate, createMigration } from "./"
+import { getProjectContext } from "./get-project-context"
 
 yargs
   .command(
-    "create-migration <name>",
-    "creates a new migration",
+    "create-migration [name]",
+    "create a new migration",
     (yargs) => {
       yargs.positional("name", {
-        describe: "Name for the migration",
+        describe: "name of the migration file",
         type: "string",
       })
     },
@@ -16,18 +17,21 @@ yargs
       createMigration(argv.name as string)
     }
   )
-  .command("reset", "resets the database", {}, () => {
-    reset()
+  .command("reset", "resets the database", {}, async () => {
+    await reset(getProjectContext())
+
+    // Reset hangs, probably due to unclosed pg connection
+    process.exit(0)
   })
   .command("migrate", "migrates the database", {}, () => {
     migrate()
   })
   .command(
-    "migrate-and-generate",
-    "migrates and generates the database",
+    "generate",
+    "generate types and sql documentation from database",
     {},
     () => {
-      migrateAndGenerate()
+      // migrateAndGenerate()
     }
   )
   .parse()

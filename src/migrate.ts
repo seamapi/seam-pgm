@@ -1,6 +1,5 @@
 // seam-pgm.ts
 import nodePgMigrate from "node-pg-migrate"
-import * as zg from "zapatos/generate"
 import { Client } from "pg"
 import Debug from "debug"
 import {
@@ -9,7 +8,7 @@ import {
 } from "pg-connection-from-env"
 import * as childProcess from "child_process"
 
-const debug = Debug("seam-node-pg-migrate")
+const debug = Debug("seam-pgm")
 
 export async function createMigration(name: string) {
   childProcess.execSync(
@@ -31,34 +30,38 @@ export async function migrate() {
           log: () => null,
         }
 
-  await Promise.all([
+  const runMigrations = () =>
     nodePgMigrate({
       dbClient: client,
       direction: "up",
-      schema: "migrations",
+      schema: "public",
       createSchema: true,
+      createMigrationsSchema: true,
+      migrationsSchema: "migrations",
       migrationsTable: "pgmigrations",
       verbose: false,
       dir: "./src/db/migrations",
       logger,
-    } as any),
-  ])
+    })
 
-  const schemas = ["public"]
-  const db = getPgConnectionFromEnv(),
-  await zg.generate({
-    db: 
-    schemas: Object.fromEntries(
-      schemas.map((s) => [
-        s,
-        {
-          include: "*",
-          exclude: [],
-        },
-      ])
-    ),
-    outDir: "./src/db/zapatos",
-  })
+  logger.info("Running migrations...")
+  try {
+    await runMigrations()
+  } catch (err: any) {
+    if (
+      err
+        .toString()
+        .includes("SyntaxError: Cannot use import statement outside a module")
+    ) {
+      console.log(
+        "Couldn't load migrations due to import issue, using esbuild-register to enable import..."
+      )
+      require("esbuild-register")
+      await runMigrations()
+    } else {
+      throw err
+    }
+  }
 
   await client.end()
 

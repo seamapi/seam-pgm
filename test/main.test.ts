@@ -1,16 +1,25 @@
 import test from "ava"
-import mockFS from "mock-fs"
 import fs from "fs"
 import os from "os"
 import child_process from "child_process"
 import path from "path"
 import { initSeamNodePgMigrate } from "../src/init"
 import { getTestPostgresDatabaseFactory } from "ava-postgres"
+import { Client } from "pg"
 
 export const initialVfs = {
   "package.json": JSON.stringify({
     name: "some-package",
   }),
+}
+
+const execSync = (...args: Parameters<typeof child_process.execSync>) => {
+  try {
+    console.log(`> ${args[0]}`)
+    return child_process.execSync(...args)
+  } catch (err: any) {
+    throw new Error(err.message)
+  }
 }
 
 let testDir: string
@@ -39,6 +48,20 @@ const getTestDatabase = getTestPostgresDatabaseFactory({
 test("initialize project with seam-node-pg-migrate", async (t) => {
   const { pool, connectionString } = await getTestDatabase()
 
+  const shellOpts: Parameters<typeof child_process.execSync>[1] = {
+    cwd: testDir,
+    env: {
+      ...process.env,
+      DATABASE_URL: connectionString,
+    },
+    // Usually messes up output, use if debugging
+    // stdio: "inherit",
+  }
+
+  execSync(`npm add -D file://${path.resolve(process.cwd())}`, shellOpts)
+
+  execSync("npx seam-pgm --help", shellOpts)
+
   await initSeamNodePgMigrate({ cwd: testDir })
   t.truthy(
     fs
@@ -47,24 +70,12 @@ test("initialize project with seam-node-pg-migrate", async (t) => {
       .includes("db:migrate")
   )
 
-  const shellOpts: Parameters<typeof child_process.execSync>[1] = {
-    cwd: testDir,
-    env: {
-      ...process.env,
-      DATABASE_URL: connectionString,
-    },
-  }
+  execSync("npm install", shellOpts)
 
-  child_process.execSync("npm install", shellOpts)
-
-  child_process.execSync(
-    "npm run db:create-migration some-migration",
-    shellOpts
-  )
+  execSync("npm run db:create-migration some-migration", shellOpts)
 
   // Read files from directory and check that the migration was created
   const migrationFiles = fs.readdirSync(path.join(testDir, "src/db/migrations"))
-  console.log({ migrationFiles })
   const migrationFile = migrationFiles.find((file) =>
     file.includes("some-migration")
   )
@@ -76,7 +87,6 @@ test("initialize project with seam-node-pg-migrate", async (t) => {
     path.join(testDir, `src/db/migrations/${migrationFile}`),
     "utf8"
   )
-  console.log(migrationContent)
   const newMigrationContent = migrationContent.replace(
     "up(pgm: MigrationBuilder): Promise<void> {",
     `up(pgm: MigrationBuilder): Promise<void> {
@@ -90,14 +100,22 @@ pgm.createTable("test_table", {
   )
 
   // Run the migration using "npm run db:migrate"
-  child_process.execSync("npm run db:migrate", shellOpts)
+  execSync("npm run db:migrate", shellOpts)
 
   // Connect to database and insert into test_table
   await pool.query("INSERT INTO test_table (test_column) VALUES ('test')")
+  const { rows: rowsAfterInsert } = await pool.query("SELECT * FROM test_table")
+  t.is(rowsAfterInsert.length, 1)
 
+  await pool.end()
   // Run "npm run db:reset" and confirm that the entry in test table was
   // removed, but test_table was re-created
-  child_process.execSync("npm run db:reset", shellOpts)
+  execSync("npm run db:reset", { ...shellOpts, stdio: "inherit" })
 
-  console.log(await pool.query("SELECT * FROM test_table"))
+  const afterResetClient = new Client({ connectionString })
+
+  const { rows: rowsAfterReset } = await afterResetClient.query(
+    "SELECT * FROM test_table"
+  )
+  t.is(rowsAfterReset.length, 0)
 })
