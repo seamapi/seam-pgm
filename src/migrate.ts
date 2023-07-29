@@ -2,11 +2,13 @@
 import nodePgMigrate from "node-pg-migrate"
 import { Client } from "pg"
 import Debug from "debug"
+import path from "path"
 import {
   getConnectionStringFromEnv,
   getPgConnectionFromEnv,
 } from "pg-connection-from-env"
 import * as childProcess from "child_process"
+import { Context } from "./get-project-context"
 
 const debug = Debug("seam-pgm")
 
@@ -17,8 +19,14 @@ export async function createMigration(name: string) {
   console.log(`Migration ${name} created`)
 }
 
-export async function migrate() {
-  const client = new Client(getConnectionStringFromEnv())
+export async function migrate(ctx: Context) {
+  const client = new Client(
+    getConnectionStringFromEnv({
+      fallbackDefaults: {
+        database: ctx.defaultDatabase,
+      },
+    })
+  )
   await client.connect()
 
   let logger =
@@ -40,7 +48,7 @@ export async function migrate() {
       migrationsSchema: "migrations",
       migrationsTable: "pgmigrations",
       verbose: false,
-      dir: "./src/db/migrations",
+      dir: path.join(ctx.cwd, "src/db/migrations"),
       logger,
     })
 

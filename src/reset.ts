@@ -42,7 +42,7 @@ export const reset = async (ctx: Context) => {
 
   // This db client is now connected to sp_api
   console.log("Running migrations...")
-  await migrate()
+  await migrate(ctx)
 
   console.log("Finished migrating")
 }

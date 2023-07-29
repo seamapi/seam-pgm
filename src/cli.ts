@@ -18,20 +18,20 @@ yargs
     }
   )
   .command("reset", "resets the database", {}, async () => {
-    await reset(getProjectContext())
+    await reset(await getProjectContext())
 
     // Reset hangs, probably due to unclosed pg connection
     process.exit(0)
   })
-  .command("migrate", "migrates the database", {}, () => {
-    migrate()
+  .command("migrate", "migrates the database", {}, async () => {
+    migrate(await getProjectContext())
   })
   .command(
     "generate",
     "generate types and sql documentation from database",
     {},
-    () => {
-      // migrateAndGenerate()
+    async () => {
+      generate(await getProjectContext())
     }
   )
   .parse()

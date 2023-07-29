@@ -22,16 +22,17 @@ export const initSeamNodePgMigrate = async (ctx: Pick<Context, "cwd">) => {
       process.env.SEAM_PGM_VERSION ?? seamPGMPackage.version
   }
 
-  if (!fs.existsSync(path.join(cwd, "seam-pgm.config.json"))) {
+  if (!fs.existsSync(path.join(cwd, "seam-pgm.config.js"))) {
     fs.writeFileSync(
-      path.join(cwd, "seam-pgm.config.json"),
-      JSON.stringify(
+      path.join(cwd, "seam-pgm.config.js"),
+      `module.exports = ${JSON.stringify(
         {
           defaultDatabase: "my_service_name",
+          schemas: ["public"],
         },
         null,
         2
-      )
+      )}`
     )
   }
 
