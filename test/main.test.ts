@@ -114,6 +114,8 @@ pgm.createTable("test_table", {
 
   const afterResetClient = new Client({ connectionString })
 
+  await afterResetClient.connect()
+
   const { rows: rowsAfterReset } = await afterResetClient.query(
     "SELECT * FROM test_table"
   )
