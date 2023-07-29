@@ -16,12 +16,13 @@
   "license": "ISC",
   "dependencies": {
     "pg-connection-from-env": "^1.1.0",
+    "pgtui": "^1.6.1",
     "yargs": "^17.7.2"
   },
   "peerDependencies": {
+    "esbuild-register": "*",
     "node-pg-migrate": "*",
-    "zapatos": "*",
-    "esbuild-register": "*"
+    "zapatos": "*"
   },
   "devDependencies": {
     "@types/debug": "^4.1.8",
