@@ -101,6 +101,51 @@ const getTriggers = async (context: DumperContext) => {
     .join("")
 }
 
+const getExtensions = async (context: DumperContext) => {
+  const { client } = context
+  const { rows } = await client.query(`
+    SELECT extname FROM pg_extension;
+  `)
+
+  return rows
+    .map((row) => `CREATE EXTENSION IF NOT EXISTS ${row.extname};\n`)
+    .join("")
+}
+
+const getIndexes = async (tableWithSchema: string, context: DumperContext) => {
+  const { client } = context
+  const [schema, table] = tableWithSchema.split(".")
+  const { rows } = await client.query(
+    `
+    SELECT indexname, indexdef
+    FROM pg_indexes
+    WHERE tablename = $1 AND schemaname = $2;
+  `,
+    [table, schema]
+  )
+
+  return rows
+    .map(
+      (row) => `CREATE INDEX ${row.indexname} ON ${table} ${row.indexdef};\n`
+    )
+    .join("")
+}
+const getGrants = async (context: DumperContext) => {
+  const { client, schemas } = context
+  const { rows } = await client.query(`
+    SELECT grantee, privilege_type, table_name, table_schema
+    FROM information_schema.role_table_grants
+    WHERE table_schema IN (${schemas.map((s) => `'${s}'`).join(",")});
+  `)
+
+  return rows
+    .map(
+      (row) =>
+        `GRANT ${row.privilege_type} ON ${row.table_schema}.${row.table_name} TO ${row.grantee};\n`
+    )
+    .join("")
+}
+
 const main = async (ctx: Context) => {
   const client = new Client({
     connectionString: getConnectionStringFromEnv({
@@ -119,22 +164,24 @@ const main = async (ctx: Context) => {
   const tables = await getTables(dumperContext)
   let sql = ""
 
-  // TODO get extensions
+  const extensions = await getExtensions(dumperContext)
+  sql += extensions
 
   for (const table of tables) {
     const tableDefinition = await getTableDefinition(table, dumperContext)
     const tableConstraints = await getTableConstraints(table, dumperContext)
-    // TODO get indexes
-    sql += tableDefinition + tableConstraints
+    const tableIndexes = await getIndexes(table, dumperContext)
+    sql += tableDefinition + tableConstraints + tableIndexes
   }
 
   const functions = await getFunctions(dumperContext)
   sql += functions
 
-  // const triggers = await getTriggers(dumperContext)
-  // sql += triggers
+  const triggers = await getTriggers(dumperContext)
+  sql += triggers
 
-  // TODO get grants
+  const grants = await getGrants(dumperContext)
+  sql += grants
 
   fs.writeFileSync("schema.sql", sql)
 
