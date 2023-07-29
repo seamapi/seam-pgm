@@ -5,7 +5,7 @@
   "description": "",
   "main": "dist/index.js",
   "scripts": {
-    "test":"ava"
+    "test": "ava"
   },
   "keywords": [],
   "author": "",
@@ -19,6 +19,7 @@
   },
   "devDependencies": {
     "ava": "^5.3.1",
+    "ava-postgres": "^4.0.5",
     "esbuild": "^0.18.16",
     "esbuild-register": "^3.4.2",
     "esbuild-runner": "^2.2.2",
