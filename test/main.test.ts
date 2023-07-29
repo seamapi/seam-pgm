@@ -45,7 +45,7 @@ const getTestDatabase = getTestPostgresDatabaseFactory({
   postgresVersion: "14",
 })
 
-test("initialize project with seam-node-pg-migrate", async (t) => {
+test("use seam-pgm in a normal way", async (t) => {
   const { pool, connectionString } = await getTestDatabase()
 
   const shellOpts: Parameters<typeof child_process.execSync>[1] = {
@@ -110,7 +110,7 @@ pgm.createTable("test_table", {
   await pool.end()
   // Run "npm run db:reset" and confirm that the entry in test table was
   // removed, but test_table was re-created
-  execSync("npm run db:reset", { ...shellOpts, stdio: "inherit" })
+  execSync("npm run db:reset", shellOpts)
 
   const afterResetClient = new Client({ connectionString })
 
@@ -120,4 +120,11 @@ pgm.createTable("test_table", {
     "SELECT * FROM test_table"
   )
   t.is(rowsAfterReset.length, 0)
+
+  execSync("npm run db:generate", { ...shellOpts, stdio: "inherit" })
+
+  // Check that a schema.d.ts file was created
+  t.truthy(
+    fs.readdirSync(path.join(testDir, "src/db/zapatos")).includes("schema.d.ts")
+  )
 })

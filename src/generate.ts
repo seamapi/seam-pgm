@@ -3,11 +3,19 @@ import {
   getConnectionStringFromEnv,
   getPgConnectionFromEnv,
 } from "pg-connection-from-env"
+import { Context } from "./get-project-context"
 
-export const generate = async ({ schemas }: { schemas: string[] }) => {
+export const generate = async ({
+  schemas,
+  defaultDatabase,
+}: Pick<Context, "schemas" | "defaultDatabase">) => {
   await zg.generate({
     db: {
-      connectionString: getConnectionStringFromEnv(),
+      connectionString: getConnectionStringFromEnv({
+        fallbackDefaults: {
+          database: defaultDatabase,
+        },
+      }),
     },
     schemas: Object.fromEntries(
       schemas.map((s) => [
@@ -18,6 +26,6 @@ export const generate = async ({ schemas }: { schemas: string[] }) => {
         },
       ])
     ),
-    outDir: "./src/db/zapatos",
+    outDir: "./src/db",
   })
 }
