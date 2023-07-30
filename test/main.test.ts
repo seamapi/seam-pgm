@@ -121,10 +121,15 @@ pgm.createTable("test_table", {
   )
   t.is(rowsAfterReset.length, 0)
 
-  execSync("npm run db:generate", { ...shellOpts, stdio: "inherit" })
+  execSync("npm run db:generate", shellOpts)
 
   // Check that a schema.d.ts file was created
   t.truthy(
     fs.readdirSync(path.join(testDir, "src/db/zapatos")).includes("schema.d.ts")
+  )
+  t.truthy(
+    fs.existsSync(
+      path.join(testDir, "src/db/structure/public/tables/test_table/table.sql")
+    )
   )
 })
