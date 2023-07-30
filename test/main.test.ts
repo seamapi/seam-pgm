@@ -3,7 +3,7 @@ import fs from "fs"
 import os from "os"
 import child_process from "child_process"
 import path from "path"
-import { initSeamNodePgMigrate } from "../src/init"
+import { initSeamPgm } from "../src/init"
 import { getTestPostgresDatabaseFactory } from "ava-postgres"
 import { Client } from "pg"
 
@@ -62,7 +62,7 @@ test("use seam-pgm in a normal way", async (t) => {
 
   execSync("npx seam-pgm --help", shellOpts)
 
-  await initSeamNodePgMigrate({ cwd: testDir })
+  await initSeamPgm({ cwd: testDir })
   t.truthy(
     fs
       .readFileSync(path.join(testDir, "package.json"))

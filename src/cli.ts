@@ -1,9 +1,14 @@
 #!/usr/bin/env node
 import yargs from "yargs"
-import { migrate, reset, generate, createMigration } from "./"
+import { migrate, reset, generate, createMigration, initSeamPgm } from "./"
 import { getProjectContext } from "./get-project-context"
 
 yargs
+  .command("init", "initialize seam-pgm", {}, async () => {
+    await initSeamPgm({
+      cwd: process.cwd(),
+    })
+  })
   .command(
     "create-migration [name]",
     "create a new migration",

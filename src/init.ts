@@ -5,7 +5,7 @@ import seamPGMPackage from "../package.json"
 import kyselyTypesTemplate from "./kysely-types.template"
 import { mkdirpSync } from "mkdirp"
 
-export const initSeamNodePgMigrate = async (ctx: Pick<Context, "cwd">) => {
+export const initSeamPgm = async (ctx: Pick<Context, "cwd">) => {
   const { cwd } = ctx
   const pkg = JSON.parse(
     fs.readFileSync(path.join(cwd, "package.json")).toString()
