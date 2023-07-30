@@ -1,7 +1,8 @@
 import { Client } from "pg"
-import fs from "fs"
 import { Context } from "../get-project-context"
 import { getConnectionStringFromEnv } from "pg-connection-from-env"
+import fs from "fs"
+import { getTreeFromSQL, treeToDirectory } from "pgtui"
 
 type DumperContext = {
   client: Client
@@ -27,7 +28,7 @@ const getTableDefinition = async (
 
   const { rows } = await client.query(
     `
-    SELECT column_name, data_type, is_nullable, column_default
+    SELECT *
     FROM INFORMATION_SCHEMA.COLUMNS
     WHERE table_name = $1 AND table_schema = $2;
   `,
@@ -36,12 +37,15 @@ const getTableDefinition = async (
 
   return `CREATE TABLE ${schema}.${table} (
     ${rows
-      .map(
-        (row) =>
-          `${row.column_name} ${row.data_type.toUpperCase()} ${
-            row.is_nullable === "YES" ? "NULL" : "NOT NULL"
-          } DEFAULT ${row.column_default || "NULL"}`
-      )
+      .map((row) => {
+        const dataType =
+          row.data_type.toUpperCase() === "ARRAY"
+            ? `${row.udt_name.replace(/^_/, "")}[]`
+            : row.data_type
+        return `${row.column_name} ${dataType} ${
+          row.is_nullable === "YES" ? "NULL" : "NOT NULL"
+        } DEFAULT ${row.column_default || "NULL"}`
+      })
       .join(",\n")}
   );\n`
 }
@@ -66,7 +70,7 @@ const getTableConstraints = async (
   return rows
     .map(
       (row) =>
-        `ALTER TABLE ${table} ADD CONSTRAINT ${row.conname} ${row.pg_get_constraintdef};\n`
+        `ALTER TABLE ONLY ${schema}."${table}" ADD CONSTRAINT "${row.conname}" ${row.pg_get_constraintdef};\n`
     )
     .join("")
 }
@@ -82,23 +86,65 @@ const getFunctions = async (context: DumperContext) => {
     AND n.oid NOT IN (SELECT extnamespace FROM pg_extension);
   `)
 
-  return rows.map((row) => `${row.pg_get_functiondef}\n`).join("")
+  return rows.map((row) => `${row.pg_get_functiondef};\n`).join("")
+}
+
+interface TriggerInfo {
+  trigger_catalog: string
+  trigger_schema: string
+  trigger_name: string
+  event_manipulation: string
+  event_object_catalog: string
+  event_object_schema: string
+  event_object_table: string
+  action_order: number
+  action_condition: string | null
+  action_statement: string
+  action_orientation: string
+  action_timing: string
+  action_reference_old_table: string | null
+  action_reference_new_table: string | null
+  action_reference_old_row: string | null
+  action_reference_new_row: string | null
+  created: Date
+}
+
+function recreateTriggerDefinitions(triggerInfos: TriggerInfo[]): string[] {
+  // Group triggers by name
+  const groupedTriggers: { [key: string]: TriggerInfo[] } = {}
+  triggerInfos.forEach((triggerInfo) => {
+    const { trigger_name } = triggerInfo
+    if (groupedTriggers[trigger_name]) {
+      groupedTriggers[trigger_name].push(triggerInfo)
+    } else {
+      groupedTriggers[trigger_name] = [triggerInfo]
+    }
+  })
+
+  // Create trigger definitions from grouped triggers
+  const triggerDefinitions: string[] = []
+  for (const triggerName in groupedTriggers) {
+    const group = groupedTriggers[triggerName]
+    const eventManipulations = group
+      .map((t) => t.event_manipulation)
+      .join(" OR ")
+
+    const triggerDefinition = `CREATE TRIGGER ${triggerName} ${group[0].action_timing} ${eventManipulations} ON ${group[0].event_object_schema}.${group[0].event_object_table} FOR EACH ROW ${group[0].action_statement};`
+    triggerDefinitions.push(triggerDefinition)
+  }
+
+  return triggerDefinitions
 }
 
 const getTriggers = async (context: DumperContext) => {
   const { client, schemas } = context
   const { rows } = await client.query(`
-    SELECT event_object_table, action_statement, action_orientation, action_timing
+    SELECT *
     FROM information_schema.triggers
     WHERE trigger_schema IN (${schemas.map((s) => `'${s}'`).join(",")})
   `)
 
-  return rows
-    .map(
-      (row) =>
-        `CREATE TRIGGER ON ${row.event_object_table} ${row.action_timing} ${row.action_orientation} EXECUTE ${row.action_statement}\n`
-    )
-    .join("")
+  return recreateTriggerDefinitions(rows).join("\n")
 }
 
 const getExtensions = async (context: DumperContext) => {
@@ -124,11 +170,7 @@ const getIndexes = async (tableWithSchema: string, context: DumperContext) => {
     [table, schema]
   )
 
-  return rows
-    .map(
-      (row) => `CREATE INDEX ${row.indexname} ON ${table} ${row.indexdef};\n`
-    )
-    .join("")
+  return rows.map((row) => `${row.indexdef};\n`).join("")
 }
 const getGrants = async (context: DumperContext) => {
   const { client, schemas } = context
@@ -146,7 +188,7 @@ const getGrants = async (context: DumperContext) => {
     .join("")
 }
 
-const main = async (ctx: Context) => {
+export const getSchemaSQL = async (ctx: Context) => {
   const client = new Client({
     connectionString: getConnectionStringFromEnv({
       fallbackDefaults: {
@@ -164,14 +206,19 @@ const main = async (ctx: Context) => {
   const tables = await getTables(dumperContext)
   let sql = ""
 
+  // TODO CREATE SCHEMA
+
   const extensions = await getExtensions(dumperContext)
   sql += extensions
 
   for (const table of tables) {
     const tableDefinition = await getTableDefinition(table, dumperContext)
+    sql += tableDefinition
     const tableConstraints = await getTableConstraints(table, dumperContext)
+    sql += tableConstraints
     const tableIndexes = await getIndexes(table, dumperContext)
-    sql += tableDefinition + tableConstraints + tableIndexes
+    sql += tableIndexes
+    // TODO ALTER TABLE OWNER
   }
 
   const functions = await getFunctions(dumperContext)
@@ -183,13 +230,32 @@ const main = async (ctx: Context) => {
   const grants = await getGrants(dumperContext)
   sql += grants
 
-  fs.writeFileSync("schema.sql", sql)
-
   await client.end()
-}
 
-main({
-  cwd: process.cwd(),
-  defaultDatabase: "seam_api",
-  schemas: ["seam", "august"],
-})
+  return sql
+}
+;(async () => {
+  const sql = await getSchemaSQL({
+    cwd: process.cwd(),
+    defaultDatabase: "seam_api",
+    schemas: ["seam", "august"],
+  })
+
+  fs.writeFileSync("./schema.sql", sql)
+
+  const lines = sql.split("\n")
+  let lastBrokenAt = 0
+  for (let i = 3; i < lines.length; i++) {
+    try {
+      getTreeFromSQL(lines.slice(0, i).join("\n"))
+    } catch (e) {
+      lastBrokenAt = i
+    }
+  }
+
+  console.log(lines.slice(lastBrokenAt - 2, lastBrokenAt))
+
+  const tree = getTreeFromSQL(sql)
+
+  console.log(tree)
+})()
