@@ -2,7 +2,7 @@
   "name": "seam-pgm",
   "repository": "seamapi/seam-node-pg-migrate",
   "version": "1.0.0",
-  "description": "",
+  "description": "Patterns for node-pg-migrate from Seam",
   "main": "dist/index.js",
   "scripts": {
     "test": "npm run build && ava",
