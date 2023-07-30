@@ -2,8 +2,9 @@ import type { Context } from "./get-project-context"
 import path from "path"
 import * as fs from "fs"
 import seamPGMPackage from "../package.json"
-import kyselyTypesTemplate from "./kysely-types.template"
+import kyselyTypesTemplate from "./templates/kysely-types.template"
 import { mkdirpSync } from "mkdirp"
+import getDbClientTemplate from "./templates/get-db-client.template"
 
 export const initSeamPgm = async (ctx: Pick<Context, "cwd">) => {
   const { cwd } = ctx
@@ -43,6 +44,14 @@ export const initSeamPgm = async (ctx: Pick<Context, "cwd">) => {
     fs.writeFileSync(
       path.join(cwd, "src", "db", "kysely-types.ts"),
       kyselyTypesTemplate
+    )
+  }
+
+  if (!fs.existsSync(path.join(cwd, "src", "db", "get-db-client.ts"))) {
+    mkdirpSync(path.join(cwd, "src", "db"))
+    fs.writeFileSync(
+      path.join(cwd, "src", "db", "get-db-client.ts"),
+      getDbClientTemplate
     )
   }
 

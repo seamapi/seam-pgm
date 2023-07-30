@@ -1,7 +1,7 @@
 {
   "name": "seam-pgm",
   "repository": "seamapi/seam-pgm",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "Patterns for node-pg-migrate from Seam",
   "main": "dist/index.js",
   "scripts": {
@@ -15,7 +15,6 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "pg-connection-from-env": "^1.1.0",
     "pg-schema-dump": "^1.0.5",
     "pgtui": "^1.6.1",
     "yargs": "^17.7.2"
@@ -24,9 +23,11 @@
     "esbuild-register": "*",
     "kysely": "*",
     "node-pg-migrate": "*",
-    "zapatos": "*"
+    "zapatos": "*",
+    "pg-connection-from-env": "*"
   },
   "devDependencies": {
+    "pg-connection-from-env": "^1.1.0",
     "@types/debug": "^4.1.8",
     "@types/yargs": "^17.0.24",
     "ava": "^5.3.1",
