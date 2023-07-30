@@ -2,6 +2,8 @@ import type { Context } from "./get-project-context"
 import path from "path"
 import * as fs from "fs"
 import seamPGMPackage from "../package.json"
+import kyselyTypesTemplate from "./kysely-types.template"
+import { mkdirpSync } from "mkdirp"
 
 export const initSeamNodePgMigrate = async (ctx: Pick<Context, "cwd">) => {
   const { cwd } = ctx
@@ -33,6 +35,14 @@ export const initSeamNodePgMigrate = async (ctx: Pick<Context, "cwd">) => {
         null,
         2
       )}`
+    )
+  }
+
+  if (!fs.existsSync(path.join(cwd, "src", "db", "kysely-types.ts"))) {
+    mkdirpSync(path.join(cwd, "src", "db"))
+    fs.writeFileSync(
+      path.join(cwd, "src", "db", "kysely-types.ts"),
+      kyselyTypesTemplate
     )
   }
 

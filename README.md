@@ -1,4 +1,4 @@
-# Seam node-pg-migrate (seam-pgm)
+# seam-pgm (Seam node-pg-migrate)
 
 Seam uses node-pg-migrate to run database migrations.
 
@@ -11,6 +11,7 @@ the typical seam configuration. Namely...
 - Code to automatically run migrations in tests
 - Automatic zapatos/kysely type generation
 - Reset database and migrate scripts
+- Automatic `src/db/zapatos` which dumps the database structure
 - Automatic `src/db/structure` which dumps the database structure
 
 This module encapsulates all that functionality into one, easy-to-use
