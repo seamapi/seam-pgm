@@ -27,4 +27,4 @@ module.
 - `seam-pgm create-migration` - create new migration
 - `seam-pgm reset` - drop database and recreate, then migrate
 - `seam-pgm migrate` - migrate database
-- `seam-pgm migrate-and-generate` - migrate database and generate new types and structure
+- `seam-pgm generate` - migrate database and generate new types and structure
