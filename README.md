@@ -24,6 +24,7 @@ module.
 > Note: `seam-node-pg-migrate` is abbreviated to `seam-pgm`, either is valid
 > as an executable
 
+- `seam-pgm init` - Set up a project to use `seam-pgm`
 - `seam-pgm create-migration` - create new migration
 - `seam-pgm reset` - drop database and recreate, then migrate
 - `seam-pgm migrate` - migrate database
