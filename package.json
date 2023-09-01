@@ -16,7 +16,7 @@
   "license": "ISC",
   "dependencies": {
     "pg-schema-dump": "^1.0.5",
-    "pgtui": "^1.6.1",
+    "pgtui": "^1.6.2",
     "yargs": "^17.7.2"
   },
   "peerDependencies": {
