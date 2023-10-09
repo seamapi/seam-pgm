@@ -19,13 +19,16 @@ export async function createMigration(name: string) {
   console.log(`Migration ${name} created`)
 }
 
-export async function migrate(ctx: Context) {
+export async function migrate(
+  ctx: Context & { databaseUrl?: string; migrationsDir?: string }
+) {
   const client = new Client(
-    getConnectionStringFromEnv({
-      fallbackDefaults: {
-        database: ctx.defaultDatabase,
-      },
-    })
+    ctx.databaseUrl ??
+      getConnectionStringFromEnv({
+        fallbackDefaults: {
+          database: ctx.defaultDatabase,
+        },
+      })
   )
   await client.connect()
 
@@ -48,7 +51,7 @@ export async function migrate(ctx: Context) {
       migrationsSchema: "migrations",
       migrationsTable: "pgmigrations",
       verbose: false,
-      dir: path.join(ctx.cwd, "src/db/migrations"),
+      dir: ctx.migrationsDir ?? path.join(ctx.cwd, "src/db/migrations"),
       logger,
     })
 
