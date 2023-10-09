@@ -1,7 +1,7 @@
 {
   "name": "seam-pgm",
   "repository": "seamapi/seam-pgm",
-  "version": "1.0.6",
+  "version": "1.1.0",
   "description": "Patterns for node-pg-migrate from Seam",
   "main": "dist/index.js",
   "scripts": {
