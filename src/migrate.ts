@@ -22,6 +22,10 @@ export async function createMigration(name: string) {
 export async function migrate(
   ctx: Context & { databaseUrl?: string; migrationsDir?: string }
 ) {
+  if (!ctx.migrationsDir && ctx.dbDir) {
+    ctx.migrationsDir = path.join(ctx.dbDir, "migrations")
+  }
+
   const client = new Client(
     ctx.databaseUrl ??
       getConnectionStringFromEnv({
