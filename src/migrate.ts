@@ -80,5 +80,6 @@ export async function migrate(
 
   await client.end()
 
-  console.log("Migrations completed")
+  // debug only
+  // console.log("Migrations completed")
 }
