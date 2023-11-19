@@ -29,3 +29,18 @@ module.
 - `seam-pgm reset` - drop database and recreate, then migrate
 - `seam-pgm migrate` - migrate database
 - `seam-pgm generate` - migrate database and generate new types and structure
+
+### Config
+
+By running `seam-pgm init` you'll automatically get a config generated, here's
+what you can customize:
+
+```ts
+module.exports = {
+  defaultDatabase: "mydb",
+  schemas: ["main"],
+
+  // Directory to store migrations, structure and database utility files
+  dbDir: "./src/db", // optional
+}
+```

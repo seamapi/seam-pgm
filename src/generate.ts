@@ -5,11 +5,15 @@ import {
 } from "pg-connection-from-env"
 import { Context } from "./get-project-context"
 import { dumpTree } from "pg-schema-dump"
+import path from "path"
 
 export const generate = async ({
   schemas,
   defaultDatabase,
-}: Pick<Context, "schemas" | "defaultDatabase">) => {
+  dbDir,
+}: Pick<Context, "schemas" | "defaultDatabase" | "dbDir">) => {
+  dbDir = dbDir ?? "./src/db"
+
   await zg.generate({
     db: {
       connectionString: getConnectionStringFromEnv({
@@ -27,11 +31,11 @@ export const generate = async ({
         },
       ])
     ),
-    outDir: "./src/db",
+    outDir: dbDir,
   })
 
   await dumpTree({
-    targetDir: "./src/db/structure",
+    targetDir: path.join(dbDir, "structure"),
     defaultDatabase,
     schemas,
   })

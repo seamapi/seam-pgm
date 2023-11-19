@@ -5,6 +5,8 @@ export type Context = {
   cwd: string
   defaultDatabase: string
   schemas: string[]
+
+  dbDir?: string
 }
 
 export const getProjectContext = async (): Promise<Context> => {
