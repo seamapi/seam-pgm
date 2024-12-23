@@ -4,7 +4,7 @@ import { SQLFragment } from "zapatos/db"
 
 type ZapatosInsertableTypeToPrimitive<T> = Exclude<
   T,
-  symbol | SQLFragment<any> | SQLFragment<any, any> | Parameter
+  symbol | SQLFragment<any, any> | Parameter
 >
 
 export type ZapatosTableNameToKyselySchema<T extends schema.Table> = {
