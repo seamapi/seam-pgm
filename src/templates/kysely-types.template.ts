@@ -1,8 +1,11 @@
 export default `import { ColumnType, Kysely } from "kysely"
 import * as schema from "zapatos/schema"
-import { SQLFragment } from "zapatos/db"
+import { Parameter, SQLFragment } from "zapatos/db"
 
-type ZapatosInsertableTypeToPrimitive<T> = Exclude<T, symbol | SQLFragment>
+type ZapatosInsertableTypeToPrimitive<T> = Exclude<
+  T,
+  symbol | SQLFragment<any, any> | Parameter
+>
 
 export type ZapatosTableNameToKyselySchema<T extends schema.Table> = {
   [K in keyof schema.SelectableForTable<T>]: ColumnType<
