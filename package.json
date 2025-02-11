@@ -30,7 +30,7 @@
     "@types/yargs": "^17.0.24",
     "ava": "^5.3.1",
     "ava-postgres": "^4.0.5",
-    "esbuild": "^0.18.16",
+    "esbuild": "^0.25.0",
     "esbuild-register": "^3.4.2",
     "esbuild-runner": "^2.2.2",
     "mkdirp": "^3.0.1",
