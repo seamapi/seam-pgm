@@ -1,30 +1,47 @@
 import * as zg from "zapatos/generate"
-import { getConnectionStringFromEnv } from "pg-connection-from-env"
+import path from "node:path"
+import fs from "node:fs/promises"
 
 export const generateSchema = async (args: {
+  connection_string: string
+  output_dir: string
   schemas: string[]
-  defaultDatabase: string
-  dbDir: string
+  excluded_tables_by_schema?: Record<string, string[]>
+  module_name?: string
 }) => {
-  const { schemas, defaultDatabase, dbDir } = args
+  const {
+    connection_string,
+    output_dir,
+    schemas,
+    excluded_tables_by_schema,
+    module_name,
+  } = args
 
   await zg.generate({
     db: {
-      connectionString: getConnectionStringFromEnv({
-        fallbackDefaults: {
-          database: defaultDatabase,
-        },
-      }),
+      connectionString: connection_string,
     },
     schemas: Object.fromEntries(
-      schemas.map((s) => [
-        s,
+      schemas.map((schema) => [
+        schema,
         {
           include: "*",
-          exclude: [],
+          exclude: excluded_tables_by_schema?.[schema] ?? [],
         },
       ]),
     ),
-    outDir: dbDir,
+    schemaJSDoc: false,
+    outDir: output_dir,
   })
+
+  if (module_name) {
+    const schema_file = path.join(output_dir, "zapatos/schema.d.ts")
+
+    const contents = await fs.readFile(schema_file, "utf8")
+
+    await fs.writeFile(
+      schema_file,
+      contents.replace("zapatos/schema", module_name),
+    )
+  }
 }
