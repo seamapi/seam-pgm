@@ -1,11 +1,6 @@
-import * as zg from "zapatos/generate"
-import {
-  getConnectionStringFromEnv,
-  getPgConnectionFromEnv,
-} from "pg-connection-from-env"
 import { Context } from "./get-project-context"
-import { dumpTree } from "pg-schema-dump"
-import path from "path"
+import { generateSchema } from "./lib/generate-schema"
+import { generateStructure } from "./lib/generate-structure"
 
 export const generate = async ({
   schemas,
@@ -14,29 +9,15 @@ export const generate = async ({
 }: Pick<Context, "schemas" | "defaultDatabase" | "dbDir">) => {
   dbDir = dbDir ?? "./src/db"
 
-  await zg.generate({
-    db: {
-      connectionString: getConnectionStringFromEnv({
-        fallbackDefaults: {
-          database: defaultDatabase,
-        },
-      }),
-    },
-    schemas: Object.fromEntries(
-      schemas.map((s) => [
-        s,
-        {
-          include: "*",
-          exclude: [],
-        },
-      ])
-    ),
-    outDir: dbDir,
+  await generateSchema({
+    schemas,
+    defaultDatabase,
+    dbDir,
   })
 
-  await dumpTree({
-    targetDir: path.join(dbDir, "structure"),
-    defaultDatabase,
+  await generateStructure({
     schemas,
+    defaultDatabase,
+    dbDir,
   })
 }
