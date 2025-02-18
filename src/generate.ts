@@ -3,12 +3,10 @@ import { Context } from "./get-project-context"
 import { generateSchema } from "./lib/generate-schema"
 import { generateStructure } from "./lib/generate-structure"
 
-export const generate = async ({
-  schemas,
-  defaultDatabase,
-  dbDir,
-}: Pick<Context, "schemas" | "defaultDatabase" | "dbDir">) => {
-  dbDir = dbDir ?? "./src/db"
+export const generate = async (
+  args: Pick<Context, "schemas" | "defaultDatabase" | "dbDir" | "zapatosDir">,
+) => {
+  const { schemas, defaultDatabase, dbDir = "./src/db", zapatosDir } = args
 
   const database_url = getConnectionStringFromEnv({
     fallbackDefaults: {
@@ -18,7 +16,7 @@ export const generate = async ({
 
   await generateSchema({
     database_url,
-    output_dir: dbDir,
+    output_dir: zapatosDir ?? dbDir,
     schemas,
   })
 

@@ -7,12 +7,13 @@ export type Context = {
   schemas: string[]
 
   dbDir?: string
+  zapatosDir?: string
 }
 
 export const getProjectContext = async (): Promise<Context> => {
   if (!fs.existsSync(path.join(process.cwd(), "seam-pgm.config.js"))) {
     throw new Error(
-      `You must have a seam-pgm.config.js file in your project root`
+      `You must have a seam-pgm.config.js file in your project root`,
     )
   }
 
