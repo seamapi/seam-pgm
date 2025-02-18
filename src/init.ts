@@ -9,17 +9,15 @@ export const initSeamPgm = async (ctx: Pick<Context, "cwd">) => {
     fs.readFileSync(path.join(cwd, "package.json")).toString(),
   )
 
-  if (!pkg.scripts) pkg.scripts = {}
-
-  pkg.scripts["db:migrate"] = "seam-pgm migrate"
-  pkg.scripts["db:reset"] = "seam-pgm reset"
-  pkg.scripts["db:generate"] = "seam-pgm generate"
-  pkg.scripts["db:create-migration"] = "seam-pgm create-migration"
-
   if (!pkg.devDependencies) pkg.devDependencies = {}
   if (!pkg.devDependencies["seam-pgm"]) {
     pkg.devDependencies["seam-pgm"] =
       process.env.SEAM_PGM_VERSION ?? seamPGMPackage.version
+
+    fs.writeFileSync(
+      path.join(cwd, "package.json"),
+      JSON.stringify(pkg, null, 2),
+    )
   }
 
   if (!fs.existsSync(path.join(cwd, "seam-pgm.config.js"))) {
@@ -35,6 +33,4 @@ export const initSeamPgm = async (ctx: Pick<Context, "cwd">) => {
       )}`,
     )
   }
-
-  fs.writeFileSync(path.join(cwd, "package.json"), JSON.stringify(pkg, null, 2))
 }

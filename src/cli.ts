@@ -2,6 +2,7 @@
 import yargs from "yargs"
 import { migrate, reset, generate, createMigration, initSeamPgm } from "./"
 import { getProjectContext } from "./get-project-context"
+import { installScripts } from "./install-scripts"
 
 yargs
   .command("init", "initialize seam-pgm", {}, async () => {
@@ -9,6 +10,16 @@ yargs
       cwd: process.cwd(),
     })
   })
+  .command(
+    "install-scripts",
+    "install seam-pgm package scripts",
+    {},
+    async () => {
+      await installScripts({
+        cwd: process.cwd(),
+      })
+    },
+  )
   .command(
     "create-migration [name]",
     "create a new migration",
@@ -20,7 +31,7 @@ yargs
     },
     (argv) => {
       createMigration(argv.name as string)
-    }
+    },
   )
   .command("reset", "resets the database", {}, async () => {
     await reset(await getProjectContext())
@@ -37,6 +48,6 @@ yargs
     {},
     async () => {
       generate(await getProjectContext())
-    }
+    },
   )
   .parse()
