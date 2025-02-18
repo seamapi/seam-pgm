@@ -3,14 +3,14 @@ import path from "node:path"
 import fs from "node:fs/promises"
 
 export const generateSchema = async (args: {
-  connection_string: string
+  database_url: string
   output_dir: string
   schemas: string[]
   excluded_tables_by_schema?: Record<string, string[]>
   module_name?: string
 }) => {
   const {
-    connection_string,
+    database_url,
     output_dir,
     schemas,
     excluded_tables_by_schema,
@@ -19,7 +19,7 @@ export const generateSchema = async (args: {
 
   await zg.generate({
     db: {
-      connectionString: connection_string,
+      connectionString: database_url,
     },
     schemas: Object.fromEntries(
       schemas.map((schema) => [

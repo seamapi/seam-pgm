@@ -10,19 +10,21 @@ export const generate = async ({
 }: Pick<Context, "schemas" | "defaultDatabase" | "dbDir">) => {
   dbDir = dbDir ?? "./src/db"
 
+  const database_url = getConnectionStringFromEnv({
+    fallbackDefaults: {
+      database: defaultDatabase,
+    },
+  })
+
   await generateSchema({
-    connection_string: getConnectionStringFromEnv({
-      fallbackDefaults: {
-        database: defaultDatabase,
-      },
-    }),
+    database_url,
     output_dir: dbDir,
     schemas,
   })
 
   await generateStructure({
+    database_url,
+    output_dir: dbDir,
     schemas,
-    defaultDatabase,
-    dbDir,
   })
 }
