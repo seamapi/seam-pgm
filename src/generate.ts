@@ -22,7 +22,7 @@ export const generate = async (
   })
 
   await generateStructure({
-    database_url,
+    database_name: defaultDatabase,
     output_dir: dbDir,
     schemas,
   })
