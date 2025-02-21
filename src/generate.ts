@@ -2,6 +2,7 @@ import { getConnectionStringFromEnv } from "pg-connection-from-env"
 import { Context } from "./get-project-context"
 import { generateSchema } from "./lib/generate-schema"
 import { generateStructure } from "./lib/generate-structure"
+import { generateTypes } from "./lib/generate-types"
 import { generateGetDbClient } from "./lib/generate-get-db-client"
 
 export const generate = async (
@@ -19,6 +20,11 @@ export const generate = async (
     database_url,
     output_dir: zapatosDir ?? dbDir,
     schemas,
+  })
+
+  await generateTypes({
+    zapatos_dir: `${zapatosDir ?? dbDir}/zapatos`,
+    output_dir: `${dbDir}/types`,
   })
 
   await generateStructure({
