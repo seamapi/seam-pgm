@@ -25,6 +25,7 @@ module.
 > as an executable
 
 - `seam-pgm init` - Set up a project to use `seam-pgm`
+- `seam-pgm install-scripts` - Install scripts to package.json
 - `seam-pgm create-migration` - create new migration
 - `seam-pgm reset` - drop database and recreate, then migrate
 - `seam-pgm migrate` - migrate database
@@ -42,5 +43,8 @@ module.exports = {
 
   // Directory to store migrations, structure and database utility files
   dbDir: "./src/db", // optional
+
+  // Directory to store zapatos schema
+  zapatosDir: "./src/db/zapatos", // optional
 }
 ```
