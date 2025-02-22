@@ -11,6 +11,9 @@ import { createGeneratedIndexFile } from "./file-generators/generated"
 import { createGeneratedUtilsFile } from "./file-generators/generated/utils"
 import { Project, type SourceFile } from "ts-morph"
 
+/**
+ * Generate types based on a Zapatos database schema.
+ */
 export const generateTypes = async (config: Config) => {
   const project = new Project()
   const database_tree = readDatabaseTree(config)
