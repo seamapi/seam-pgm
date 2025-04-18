@@ -1,42 +1,34 @@
-import * as zg from "zapatos/generate"
-import {
-  getConnectionStringFromEnv,
-  getPgConnectionFromEnv,
-} from "pg-connection-from-env"
+import { getConnectionStringFromEnv } from "pg-connection-from-env"
 import { Context } from "./get-project-context"
-import { dumpTree } from "pg-schema-dump"
-import path from "path"
+import { generateSchema } from "./lib/generate-schema"
+import { generateStructure } from "./lib/generate-structure"
+import { generateGetDbClient } from "./lib/generate-get-db-client"
 
-export const generate = async ({
-  schemas,
-  defaultDatabase,
-  dbDir,
-}: Pick<Context, "schemas" | "defaultDatabase" | "dbDir">) => {
-  dbDir = dbDir ?? "./src/db"
+export const generate = async (
+  args: Pick<Context, "schemas" | "defaultDatabase" | "dbDir" | "zapatosDir">,
+) => {
+  const { schemas, defaultDatabase, dbDir = "./src/db", zapatosDir } = args
 
-  await zg.generate({
-    db: {
-      connectionString: getConnectionStringFromEnv({
-        fallbackDefaults: {
-          database: defaultDatabase,
-        },
-      }),
+  const database_url = getConnectionStringFromEnv({
+    fallbackDefaults: {
+      database: defaultDatabase,
     },
-    schemas: Object.fromEntries(
-      schemas.map((s) => [
-        s,
-        {
-          include: "*",
-          exclude: [],
-        },
-      ])
-    ),
-    outDir: dbDir,
   })
 
-  await dumpTree({
-    targetDir: path.join(dbDir, "structure"),
-    defaultDatabase,
+  await generateSchema({
+    database_url,
+    output_dir: zapatosDir ?? dbDir,
     schemas,
+  })
+
+  await generateStructure({
+    database_name: defaultDatabase,
+    output_dir: dbDir,
+    schemas,
+  })
+
+  generateGetDbClient({
+    types_dir: `${dbDir}/types`,
+    output_dir: dbDir,
   })
 }

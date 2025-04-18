@@ -2,27 +2,22 @@ import type { Context } from "./get-project-context"
 import path from "path"
 import * as fs from "fs"
 import seamPGMPackage from "../package.json"
-import kyselyTypesTemplate from "./templates/kysely-types.template"
-import { mkdirpSync } from "mkdirp"
-import getDbClientTemplate from "./templates/get-db-client.template"
 
 export const initSeamPgm = async (ctx: Pick<Context, "cwd">) => {
   const { cwd } = ctx
   const pkg = JSON.parse(
-    fs.readFileSync(path.join(cwd, "package.json")).toString()
+    fs.readFileSync(path.join(cwd, "package.json")).toString(),
   )
-
-  if (!pkg.scripts) pkg.scripts = {}
-
-  pkg.scripts["db:migrate"] = "seam-pgm migrate"
-  pkg.scripts["db:reset"] = "seam-pgm reset"
-  pkg.scripts["db:generate"] = "seam-pgm generate"
-  pkg.scripts["db:create-migration"] = "seam-pgm create-migration"
 
   if (!pkg.devDependencies) pkg.devDependencies = {}
   if (!pkg.devDependencies["seam-pgm"]) {
     pkg.devDependencies["seam-pgm"] =
       process.env.SEAM_PGM_VERSION ?? seamPGMPackage.version
+
+    fs.writeFileSync(
+      path.join(cwd, "package.json"),
+      JSON.stringify(pkg, null, 2),
+    )
   }
 
   if (!fs.existsSync(path.join(cwd, "seam-pgm.config.js"))) {
@@ -34,26 +29,8 @@ export const initSeamPgm = async (ctx: Pick<Context, "cwd">) => {
           schemas: ["public"],
         },
         null,
-        2
-      )}`
+        2,
+      )}`,
     )
   }
-
-  if (!fs.existsSync(path.join(cwd, "src", "db", "kysely-types.ts"))) {
-    mkdirpSync(path.join(cwd, "src", "db"))
-    fs.writeFileSync(
-      path.join(cwd, "src", "db", "kysely-types.ts"),
-      kyselyTypesTemplate
-    )
-  }
-
-  if (!fs.existsSync(path.join(cwd, "src", "db", "get-db-client.ts"))) {
-    mkdirpSync(path.join(cwd, "src", "db"))
-    fs.writeFileSync(
-      path.join(cwd, "src", "db", "get-db-client.ts"),
-      getDbClientTemplate
-    )
-  }
-
-  fs.writeFileSync(path.join(cwd, "package.json"), JSON.stringify(pkg, null, 2))
 }
