@@ -15,9 +15,8 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@seamapi/dbtypr": "^0.1.0",
     "pg-schema-dump": "^2.0.1",
-    "prettier": "^3.5.1",
-    "ts-morph": "^25.0.1",
     "yargs": "^17.7.2"
   },
   "peerDependencies": {

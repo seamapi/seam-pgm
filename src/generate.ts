@@ -2,7 +2,7 @@ import { getConnectionStringFromEnv } from "pg-connection-from-env"
 import { Context } from "./get-project-context"
 import { generateSchema } from "./lib/generate-schema"
 import { generateStructure } from "./lib/generate-structure"
-import { generateTypes } from "./lib/generate-types"
+import { generateTypes } from "@seamapi/dbtypr"
 import { generateGetDbClient } from "./lib/generate-get-db-client"
 
 export const generate = async (
