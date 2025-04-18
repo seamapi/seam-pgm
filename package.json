@@ -1,5 +1,5 @@
 {
-  "name": "seam-pgm",
+  "name": "@seamapi/seam-pgm",
   "repository": "seamapi/seam-pgm",
   "version": "1.4.0",
   "description": "Patterns for node-pg-migrate from Seam",
