@@ -3,7 +3,7 @@ import path from "path"
 
 export const generateStructure = async (args: {
   database_name: string
-  schemas: string[]
+  schemas?: string[]
   output_dir: string
 }) => {
   const { database_name, schemas, output_dir } = args
