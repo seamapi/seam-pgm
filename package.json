@@ -39,7 +39,7 @@
     "node-pg-migrate": "^6.2.2",
     "pg": "^8.11.1",
     "pg-connection-from-env": "^1.1.0",
-    "tsup": "^7.1.0",
+    "tsup": "^9.0.0",
     "zapatos": "^6.1.4"
   },
   "overrides": {
